@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/28 17:16:42 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/07 16:55:59 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/07 17:07:39 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,10 +37,39 @@ int	count_quotes(char *str)
 	return (1);			// matched quote, OK
 }
 
+	// --	TODO
 // char	*get_home_env()
 // char	*get_oldpwd_env()
 // char	*get_pwd()
 // void	update_env(char *env, char *new)
+
+int	get_env_list_size(char **env)
+{
+	int	total;
+
+	total = 0;
+	while (env[total])
+		total++;
+	return (total);
+}
+
+void	copy_env_list(char **env)
+{
+	char	**env_copy;
+	int		env_size;
+
+	env_size = (get_env_list_size(env);
+	env_copy = (char **)malloc(sizeof(char *) * (env_size + 1));
+	if (!env_copy)
+		exit(4);
+
+	env_copy[env_size] = NULL;
+	while (env_size >= 0)
+	{
+		env_copy[env_size] = ft_strdup(env[env_size]);
+		env_size--;
+	}
+}
 
 void	change_dir(char **pwd, char *dest)
 {
@@ -100,7 +129,6 @@ void	execute_commands(char **args)
 	}
 	ft_memdel((void **)&buf);
 }
-
 
 int	skip_whitespace(char *str)
 {
