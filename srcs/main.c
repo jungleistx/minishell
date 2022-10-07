@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/28 17:16:42 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/07 17:07:39 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/07 17:12:10 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,13 +53,14 @@ int	get_env_list_size(char **env)
 	return (total);
 }
 
+
 void	copy_env_list(char **env)
 {
 	char	**env_copy;
 	int		env_size;
 
 	env_size = (get_env_list_size(env);
-	env_copy = (char **)malloc(sizeof(char *) * (env_size + 1));
+	env_copy = (char **)malloc(sizeof(char *) * env_size);
 	if (!env_copy)
 		exit(4);
 
