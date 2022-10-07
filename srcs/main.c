@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/28 17:16:42 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/05 13:28:18 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/07 16:55:59 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,45 @@ int	count_quotes(char *str)
 	return (1);			// matched quote, OK
 }
 
+// char	*get_home_env()
+// char	*get_oldpwd_env()
+// char	*get_pwd()
+// void	update_env(char *env, char *new)
+
+void	change_dir(char **pwd, char *dest)
+{
+	// multiple input
+		// 22-10-07, 16:42 ~/hive/repos/minishell -> cd asdasd ~
+		// cd: string not in pwd: asdasd
+		// 22-10-07, 16:42 ~/hive/repos/minishell -> cd ~ asdasd
+		// cd: no such file or directory: asdasd/hive/repos/minishell
+	char	*tmp;
+
+	if (!dest)
+		tmp = get_home_env();
+	else if (ft_strcmp("-", dest) == 0)
+		tmp = get_old_pwd();
+	else
+		tmp = ft_strdup(dest);
+
+	if (chdir(tmp) == -1)
+	{
+		ft_printf("cd: no such file or directory: %s\n", tmp);
+		ft_memdel((void **)&tmp);
+		return ;
+	}
+	else
+		update_env("OLDPWD", *pwd);
+	ft_memdel((void **)&tmp);
+	ft_memdel((void **)pwd);
+	*pwd = getcwd(NULL, 0);
+	update_env("PWD", *pwd);
+}
+
 void	execute_commands(char **args)
 {
+	char *buf;
+
 	if (ft_strcmp("exit", args[0]) == 0)
 	{
 		ft_printf("BYE!\n");
@@ -51,38 +88,19 @@ void	execute_commands(char **args)
 			ft_printf("%s ", args[i]);
 		ft_printf("\n");
 	}
+	else if (ft_strcmp("pwd", args[0]) == 0)
+	{
+		buf = getcwd(NULL, 0);
+		ft_printf("%s\n", buf);
+	}
+	else if (ft_strcmp("cd", args[0]) == 0)
+	{
+		buf = getcwd(NULL, 0);
+		change_dir(&buf, args[1]);
+	}
+	ft_memdel((void **)&buf);
 }
 
-
-
-// char	*trim_mid(char *str)
-// {
-// 	char	*trimmed;
-// 	trimmed = NULL;
-// 	int		len;
-// 	int		i;
-
-// 	i = 0;
-// 	len = 0;
-
-// 	(void)str;
-// 	return (trimmed);
-// }
-
-// char	**trim_input(char *str)
-// {
-// 	char	*trim_end;
-// 	// char	*trim_mid;
-
-// 	trim_end = ft_strtrim(str);
-// 	// trim_mid = trim_mid(trim_end);
-
-// 	// ft_strdel(&trim_mid);
-
-
-// 	//
-// 	return (NULL);
-// }
 
 int	skip_whitespace(char *str)
 {
@@ -159,7 +177,7 @@ char	**get_arguments(char *str, int argc)
 			j = i;
 			i = find_argument_len(&str[i]);
 			array[arg++] = ft_strsub(str, (unsigned int)j, (size_t)i);
-			i += j;
+			i += j - 1;
 		}
 		// ft_printf("(%d)\n", i);
 	}
@@ -242,7 +260,7 @@ void	strip_quotes(char ***args, int argc)
 						(void *)&(*args)[a][quote2], len - quote2);
 				// ft_printf("end (%s)(i=%d)\n", (*args)[a], i);
 
-				i = quote2 - 2; // ?
+				i = quote2 - 2;
 			}
 		}
 	}
@@ -252,16 +270,22 @@ void	strip_quotes(char ***args, int argc)
 // {
 // 	int	a;
 // 	int	i;
+// 	int	len;
 
 // 	a = -1;
 // 	while (++a < argc)
 // 	{
+// 		len = (int)ft_strlen((*args)[a]);
 // 		i = -1;
 // 		while ((*args)[a][++i])
 // 		{
 // 			if ((*args)[a][i] == '$')
 // 			{
 // 				if
+// 			}
+// 			else if ((*args)[a][i] == '~' && i == 0)
+// 			{
+
 // 			}
 // 		}
 // 	}
@@ -282,41 +306,26 @@ void	parse_input(char *str, char ***args)
 	argc = ms_count_arguments(trimmed);
 
 	*args = get_arguments(trimmed, argc);
-
+	ft_strdel(&trimmed);
+	if (argc > 10)
+	{
+		ft_printf("Too many arguments\n");
+	}
 	// check_dollar_tilde(args, argc);
 
 	strip_quotes(args, argc);
-	int a = 0;
-	ft_printf("		PARSER\n");
-	ft_printf("Orig: (%s)(%d)\n", str, argc);
-	while (a < argc)
-	{
-		ft_printf("(%d)(%s)\n", a, (*args)[a]);
-		a++;
-	}
-	ft_printf("(%d)(%s)\n", a, (*args)[a]);
-	/*
-	// count quotes % 2 == 0	(except \")
-	// ft_strtrim input +
-	// in the middle
-//EDGE
-	// echo    "asd     'asd  s"  xx' + NULL
-	// echo    "asd     asd  s"     "asdads" + NULL
-	// 0 echo
-	// 1 asd   asd s
-	// 2 asdasd
-	// 3 $HOME$KHSDA$SHELL
 
-	0	ls
-	1 - l
+	// test print
+	// int a = 0;
+	// ft_printf("\t\tOriginal: (%s)(%d)\n", str, argc);
+	// while (a < argc)
+	// {
+	// 	ft_printf("(%d)(%s)\n", a, (*args)[a]);
+	// 	a++;
+	// }
+	// ft_printf("(%d)(%s)\n", a, (*args)[a]);
+	//
 
-	// trim the first and last ' || "
-	// check $ && ~ && convert to proper output
-	*/
-
-	// *args = ft_strsplit(str, 32);
-	// if (!*args)
-	// 	exit(2);
 }
 
 char	*get_input(void)
@@ -329,8 +338,11 @@ char	*get_input(void)
 }
 
 void	reset_help(t_ms_help *help)
+// void	reset_help(t_ms_help *help, char **commands)
 {
 	help->found = 0;
+	// commands = {"cd\0", "echo\0", "pwd\0", "exit\0", "setenv\0",
+	// "ls\0"  };
 }
 
 int	main(void)
@@ -338,8 +350,10 @@ int	main(void)
 	char		*str;
 	char		**args;
 	t_ms_help	help;
+	// char		*commands[];		// [?]
 
 	reset_help(&help);
+	// reset_help(&help, &commands);
 
 	while (1)
 	{
