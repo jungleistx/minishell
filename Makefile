@@ -1,6 +1,6 @@
 CC=gcc -Wall -Wextra -Werror -O3
 
-MS_FILES=main.c
+MS_FILES=main.c parser.c parser_quotes.c env.c
 
 MS_FULL=$(addprefix srcs/, $(MS_FILES))
 MS_OBJ=$(MS_FULL:%.c=%.o)
