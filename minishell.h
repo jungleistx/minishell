@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/27 20:35:59 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/05 13:34:54 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/10 14:00:29 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,21 @@
 typedef struct s_ms_help
 {
 	int		found;
-
+	char	**env;
+	int		env_size;
 }			t_ms_help;
 
-int	count_quotes(char *str);
+// parser.c
+int		skip_whitespace(char *str);
+int		find_argument_len(char *str);
+char	**get_arguments(char *str, int argc);
+int		ms_count_arguments(char *str);
+void	parse_input(char *str, char ***args);
+
+// parser_quotes.c
+int		count_quotes(char *str);
+int		find_matching_quote(char *str, char quote);
+void	strip_quotes(char ***args, int argc);
 
 #endif
 
@@ -35,6 +46,7 @@ int	count_quotes(char *str);
 1	gnl
 2	strsplit
 3	arg malloc
+4	copy env list malloc
 10	exit input (SUCCESS)
 */
 
@@ -49,7 +61,9 @@ int	count_quotes(char *str);
 // 2 1
 
 
-// '$'   -> strip
-// $''	  -> -$
-// $""   -> strip
-// ...   -> convert + strip
+/*
+'$'   -> strip
+$''	  -> -$
+$""   -> strip
+...   -> convert + strip
+*/
