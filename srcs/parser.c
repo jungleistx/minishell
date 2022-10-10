@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/10 13:47:58 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/10 13:52:23 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/10 16:45:42 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,7 @@ int	ms_count_arguments(char *str)
 	// "hello "  "asddsa"  asd asd
 }
 
-void	parse_input(char *str, char ***args)
+void	parse_input(char *str, char ***args, t_ms_help *help)
 {
 	char	*trimmed;
 	int		argc;
@@ -126,14 +126,14 @@ void	parse_input(char *str, char ***args)
 	}
 	trimmed = ft_strtrim(str);
 	argc = ms_count_arguments(trimmed);
-
+	help->arguments = argc;
 	*args = get_arguments(trimmed, argc);
 	ft_strdel(&trimmed);
 	if (argc > 10)
 	{
 		ft_printf("Too many arguments\n");
 	}
-	// check_dollar_tilde(args, argc);
+	// convert_env_list(args, argc, help->env, help);
 
 	strip_quotes(args, argc);
 }
