@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/10 15:33:29 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/10 19:08:24 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/11 14:34:38 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,8 +106,33 @@ void	update_env(char *name, char *var, char ***env)
 			tmp = ft_strcpy(tmp, (const char *)name);
 			ft_strcat(tmp, "=");
 			ft_strcat(tmp, var);
-			*(*env)[a] = ft_strdub(tmp);
+			(*env)[a] = ft_strdup(tmp);
 			free(tmp);
 		}
 	}
+}
+
+void	add_env(char *var, char ***env, t_ms_help *help)
+{
+	char	**new_env;
+	int		size;
+
+	// print_env_list(*env, help);
+	// ft_printf("size = %d\n", help->env_size);
+
+	help->env_size++;
+	size = help->env_size;
+	new_env = (char **)malloc(sizeof(char *) * (size + 1));
+	if (!new_env)
+		exit(6);
+	new_env[size--] = NULL;
+	new_env[size] = ft_strdup(var);
+	while (--size >= 0)
+	{
+		new_env[size] = ft_strdup((*env)[size]);
+	}
+	ft_free_doublearray(env);
+	*env = new_env;
+	// print_env_list(*env, help);
+	// ft_printf("size = %d\n", help->env_size);
 }
