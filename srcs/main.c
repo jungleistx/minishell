@@ -95,17 +95,23 @@ void	change_dir(char **pwd, char *dest)
 		return ;
 	}
 	else
-		update_env("OLDPWD", *pwd);
+	{
+		update_env("OLDPWD", *pwd, &(help->env));
+	}
+
 	ft_memdel((void **)&tmp);
 	ft_memdel((void **)pwd);
 	*pwd = getcwd(NULL, 0);
-	update_env("PWD", *pwd);
+	update_env("PWD", *pwd, &(help->env));
 }
 
-void	execute_commands(char **args)
+void	execute_commands(char **args, t_ms_help *help)
 {
-	char *buf;
+	char	*buf;
+	int		i;
 
+	i = 0;
+	buf = getcwd(NULL, 0);
 	if (ft_strcmp("exit", args[0]) == 0)
 	{
 		ft_printf("BYE!\n");
@@ -130,10 +136,14 @@ void	execute_commands(char **args)
 	{
 		print_env_list(help->env, help);
 	}
+	else if (ft_strcmp("unsetenv", args[0]) == 0)
+	{
+		// print_env_list(help->env, help);
+	}
 	else if (ft_strcmp("setenv", args[0]) == 0)
 	{
 		// parse the arg[1];
-		// SHELL=randomness  '='count == 1
+		// SHELL=randomness  '='count == 1									->
 
 		update_env("SHELL", "randomness", &(help->env));
 	}
@@ -149,111 +159,68 @@ char	*get_env_name(char *var)
 	int	i;
 
 	i = 0;
-	ft_printf("env_full\t(%s)\n", var);
+	// ft_printf("env_func\t(%s)\n", var);
 	while (var[i] && ((ft_isalnum(var[i])) || var[i] == '_'))
-	{
 		i++;
-	}
 	return (ft_strsub((const char *)var, 0, (size_t)i));
 }
 
-/*
-if 0, get name, if !NULL, sub, if len < str, append rest
-*/
+char	*get_post_dollar_content(char *str, int i, size_t len, size_t post_len)
+{
+	char	*tmp;
 
-// *args[a] = update_arg_dollar(i, &(*args)[a], env, help)
+	tmp = ft_strsub((const char *)&str[(size_t)i + len], 0, post_len);
+	if (!tmp)
+		exit(12);
+	return (tmp);
+}
+
+void	replace_dollar_content(char **str, char *cont, char **pre_d, int i)
+{
+	if (i > 0)
+	{
+		*str = ft_strncpy(*str, (const char *)*pre_d, (size_t)i);
+		*str = ft_strcat(*str, (const char *)cont);
+		ft_strdel(pre_d);
+	}
+	else
+		*str = ft_strcpy(*str, (const char *)cont);
+}
+
+void	append_post_dollar(char **str, char **post)
+{
+	*str = ft_strcat(*str, (const char *)*post);
+	ft_strdel(post);
+}
+
 void	update_arg_dollar(int i, char **str, char **env, t_ms_help *help)
 {
 	char	*tmp;
 	char	*content;
 	char	*pre_dollar;
-	size_t	orig_len;
-	size_t	content_len;
-	size_t	env_len;
-	size_t	post_env_len;
+	size_t	post_len;
+	size_t	new_full_len;
 
-	// ft_printf("updatestr \t(%s)\n", *str);
 	tmp = get_env_name(&(*str)[i + 1]);
-	// ft_printf("env_name\t(%s)\n", tmp);
 	content = get_env(tmp, env, help);
-	// ft_printf("content\t\t(%s)\n", content);
-	/*	mallocs:
-	tmp, content
-	*/
-// env_full        (LOGNAME)
-// env_name        (LOGNAME)
-// content         (rvuorenl)
-// predoll         (hello)
-// test final      (hello$LOGNAME)
-
-	orig_len = ft_strlen(*str);
-	content_len = ft_strlen(content);
-	env_len = ft_strlen(tmp);
-	post_env_len = ft_strlen(tmp);
-// env_full        (LOGNAME)
-// len str         13 (hello$LOGNAME)
-// i               5
-// len tmp         7 (LOGNAME)
-// len cont        8 (rvuorenl)
-// predoll         (hello)
-// test final      (hello$LOGNAME)
-
-	// ft_printf("len str\t\t%d (%s)\n", ft_strlen(*str), *str);
-	// ft_printf("i\t\t%d\n",i);
-	// ft_printf("len tmp\t\t%d (%s)\n", ft_strlen(tmp), tmp);
-	// ft_printf("len content\t%d (%s)\n", ft_strlen(content), content);
-
+	post_len = ft_strlen(*str) - ft_strlen(tmp) - (size_t)i - 1;
+	ft_strdel(&tmp);
+	if (post_len > 0)
+		tmp = get_post_dollar_content(*str, i, ft_strlen(content), post_len);
 	if (i > 0)
-	{
-		if (content)
-		{
-			pre_dollar = ft_strsub((const char *)(*str), 0, (size_t)i);
-			ft_printf("predoll\t\t(%s)\n", pre_dollar);
-			// ft_strcat(pre_dollar, content);
-		}
-		else
-		{
+		pre_dollar = ft_strsub((const char *)(*str), 0, (size_t)i);
+	new_full_len = (size_t)i + ft_strlen(content) + post_len + 1;
+	ft_bzero((void *)*str, ft_strlen(*str));
+	ft_strdel(str);
+	*str = (char *)malloc(new_full_len);
+	if (!*str)
+		exit(9);
+	replace_dollar_content(str, content, &pre_dollar, i);
+	if (post_len > 0)
+		append_post_dollar(str, &tmp);
+	ft_strdel(&content);
+}
 
-		}
-	}
-	else
-	{
-		// if ()
-	}
-	// char	*tmp;
-
-	// // tmp = get_env(&(*str)[i], env, help);
-	// tmp = get_env(&(*str)[i + 1], env, help);
-	// ft_printf("tmp = (%s)(%d)\n", tmp, i);
-	// ft_printf("str[i]\t(%s)\n", &(*str)[i]);
-	// ft_printf("str\t(%s)\n", *str);
-	// if (i > 0)
-	// {
-	// 	if (tmp == NULL)
-	// 	{
-	// 		ft_strdel(&tmp);
-	// 		*env = (char *)malloc(sizeof(char) * (i + 1));	// check amount
-	// 		if (!(*env))
-	// 			exit(7);
-	// 		tmp = ft_strsub((const char *)str, 0, (size_t)i);
-	// 		ft_strdel(str);
-	// 		ft_strdup((const char *)tmp);
-	// 		ft_strdel(&tmp);
-	// 		return ;
-	// 	}
-	// 	/*
-	// 	// if (ft_strchr(name, '/'))
-	// 		//
-	// 		num != first
-	// 	while  (ft_isalpha(str[i]) || str[i] == '_') && str[i])
-	// 	*/
-	// 	ft_strdel(str);
-	// }
-	// else
-	// {
-	// 	ft_strdel(str);
-	// 	*str = ft_strdup(tmp);
-	// }
 }
 
 void	convert_env_list(char ***args, int argc, char **env, t_ms_help *help)
@@ -273,13 +240,8 @@ void	convert_env_list(char ***args, int argc, char **env, t_ms_help *help)
 		{
 			if ((*args)[a][i] == '$')
 			{
-				// $HOMEabc
-				// *args[a] = update_arg_dollar(i, &(*args)[a], env, help)
-
-				// char *tmp = get_env("HOME", help.env, &help);
-				// ft_printf("\n- - - - - -\n%s\n- - - - - - -\n", tmp);
-				// ft_strdel(&tmp);
-
+				update_arg_dollar(i, &(*args)[a], env, help);
+				i = -1;
 			}
 			else if ((*args)[a][i] == '~' && i == 0)
 			{
