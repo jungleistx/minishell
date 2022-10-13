@@ -82,9 +82,9 @@ void	change_dir(char **pwd, char *dest)
 	char	*tmp;
 
 	if (!dest)
-		tmp = get_home_env();
+		tmp = get_env("HOME", help->env, help);
 	else if (ft_strcmp("-", dest) == 0)
-		tmp = get_old_pwd();
+		tmp = get_env("OLDPWD", help->env, help);
 	else
 		tmp = ft_strdup(dest);
 
@@ -113,248 +113,180 @@ void	execute_commands(char **args)
 	}
 	else if (ft_strcmp("echo", args[0]) == 0)
 	{
-		int i = 0;
 		while (args[++i])
 			ft_printf("%s ", args[i]);
 		ft_printf("\n");
 	}
 	else if (ft_strcmp("pwd", args[0]) == 0)
 	{
-		buf = getcwd(NULL, 0);
 		ft_printf("%s\n", buf);
 	}
 	else if (ft_strcmp("cd", args[0]) == 0)
 	{
-		buf = getcwd(NULL, 0);
-		change_dir(&buf, args[1]);
+		// buf = getcwd(NULL, 0);
+		change_dir(&buf, args[1], help);
 	}
+	else if (ft_strcmp("env", args[0]) == 0)
+	{
+		print_env_list(help->env, help);
+	}
+	else if (ft_strcmp("setenv", args[0]) == 0)
+	{
+		// parse the arg[1];
+		// SHELL=randomness  '='count == 1
+
+		update_env("SHELL", "randomness", &(help->env));
+	}
+	// else
+	// {
+		// /usr/bin/arg[0];
+	// }
 	ft_memdel((void **)&buf);
 }
 
-int	skip_whitespace(char *str)
-{
-	int	i;
-
-	i = -1;
-	while (str[++i])
-	{
-		if (str[i] == ' ' || str[i] == '\t' || str[i] == '\r'
-			|| str[i] == '\n' || str[i] == '\f' || str[i] == '\v')
-		{
-			i++;
-			while ((str[i] == ' ' || str[i] == '\t' || str[i] == '\r'
-			|| str[i] == '\n' || str[i] == '\f' || str[i] == '\v') && str[i])
-				i++;
-			if (str[i])
-				return (i - 1);
-		}
-	}
-	return (0);
-}
-/*
-count until match
-count_until_whitespace
-	save to array[i] -> malloc, strncpy
-*/
-
-int	find_matching_quote(char *str, char quote)
-{
-	int	i;
-
-	i = 1;
-	// ft_printf("		---(%c)", quote);
-	while (str[i] && str[i] != quote)
-	{
-		// ft_printf("(%s) ", &str[i]);
-		i++;
-	}
-		// ft_printf("\n");
-	return (i);
-}
-
-int	find_argument_len(char *str)
+char	*get_env_name(char *var)
 {
 	int	i;
 
 	i = 0;
-	while (str[i] && !(ft_iswhitespace(str[i])))
+	ft_printf("env_full\t(%s)\n", var);
+	while (var[i] && ((ft_isalnum(var[i])) || var[i] == '_'))
 	{
-		if (str[i] == '\'' || str[i] == '\"')
-			i += find_matching_quote(&str[i], str[i]);
 		i++;
 	}
-	return (i);
+	return (ft_strsub((const char *)var, 0, (size_t)i));
 }
 
-char	**get_arguments(char *str, int argc)
+/*
+if 0, get name, if !NULL, sub, if len < str, append rest
+*/
+
+// *args[a] = update_arg_dollar(i, &(*args)[a], env, help)
+void	update_arg_dollar(int i, char **str, char **env, t_ms_help *help)
 {
-	int		i;
-	int		j;
-	int		arg;
-	char	**array;
+	char	*tmp;
+	char	*content;
+	char	*pre_dollar;
+	size_t	orig_len;
+	size_t	content_len;
+	size_t	env_len;
+	size_t	post_env_len;
 
-	array = (char **) malloc(sizeof(char *) * (argc + 1));
-	if (!array)
-		exit(3);
-	i = -1;
-	arg = 0;
-	while (str[++i])
+	// ft_printf("updatestr \t(%s)\n", *str);
+	tmp = get_env_name(&(*str)[i + 1]);
+	// ft_printf("env_name\t(%s)\n", tmp);
+	content = get_env(tmp, env, help);
+	// ft_printf("content\t\t(%s)\n", content);
+	/*	mallocs:
+	tmp, content
+	*/
+// env_full        (LOGNAME)
+// env_name        (LOGNAME)
+// content         (rvuorenl)
+// predoll         (hello)
+// test final      (hello$LOGNAME)
+
+	orig_len = ft_strlen(*str);
+	content_len = ft_strlen(content);
+	env_len = ft_strlen(tmp);
+	post_env_len = ft_strlen(tmp);
+// env_full        (LOGNAME)
+// len str         13 (hello$LOGNAME)
+// i               5
+// len tmp         7 (LOGNAME)
+// len cont        8 (rvuorenl)
+// predoll         (hello)
+// test final      (hello$LOGNAME)
+
+	// ft_printf("len str\t\t%d (%s)\n", ft_strlen(*str), *str);
+	// ft_printf("i\t\t%d\n",i);
+	// ft_printf("len tmp\t\t%d (%s)\n", ft_strlen(tmp), tmp);
+	// ft_printf("len content\t%d (%s)\n", ft_strlen(content), content);
+
+	if (i > 0)
 	{
-		// ft_printf("(%d)->", i);
-		if (!ft_iswhitespace(str[i]))
+		if (content)
 		{
-			j = i;
-			i = find_argument_len(&str[i]);
-			array[arg++] = ft_strsub(str, (unsigned int)j, (size_t)i);
-			i += j - 1;
-		}
-		// ft_printf("(%d)\n", i);
-	}
-	array[argc] = NULL;
-	return (array);
-	//    012 456 891 11='\0'
-	//    asd dqe sad
-}
-
-int	ms_count_arguments(char *str)
-{
-	int		ret;
-	int		i;
-
-	ret = 0;
-	i = -1;
-	while (str[++i])
-	{
-		// ft_printf("s(%d)", i);
-		if (!ft_iswhitespace(str[i]))
-		{
-			// ft_printf("	is(%d) ", i);
-			while (!ft_iswhitespace(str[i]) && str[i])
-			{
-				if (str[i] == '\'' || str[i] == '\"')
-					i += find_matching_quote(&str[i], str[i]);
-				i++;
-			}
-			ret++;
-			// ft_printf("	ie(%d) ", i);
-			if (str[i] == '\0')
-				break ;
+			pre_dollar = ft_strsub((const char *)(*str), 0, (size_t)i);
+			ft_printf("predoll\t\t(%s)\n", pre_dollar);
+			// ft_strcat(pre_dollar, content);
 		}
 		else
 		{
-			// ft_printf("	es(%d) ", i);
-			i += skip_whitespace(&str[i]);
-			// ft_printf("	ee(%d) ", i);
+
 		}
-		// ft_printf("e(%d)\n", i);
 	}
-	return (ret);
-	// 	      7  10     17		  27='\0'
-	// "hello "  "asddsa"  asd asd
+	else
+	{
+		// if ()
+	}
+	// char	*tmp;
+
+	// // tmp = get_env(&(*str)[i], env, help);
+	// tmp = get_env(&(*str)[i + 1], env, help);
+	// ft_printf("tmp = (%s)(%d)\n", tmp, i);
+	// ft_printf("str[i]\t(%s)\n", &(*str)[i]);
+	// ft_printf("str\t(%s)\n", *str);
+	// if (i > 0)
+	// {
+	// 	if (tmp == NULL)
+	// 	{
+	// 		ft_strdel(&tmp);
+	// 		*env = (char *)malloc(sizeof(char) * (i + 1));	// check amount
+	// 		if (!(*env))
+	// 			exit(7);
+	// 		tmp = ft_strsub((const char *)str, 0, (size_t)i);
+	// 		ft_strdel(str);
+	// 		ft_strdup((const char *)tmp);
+	// 		ft_strdel(&tmp);
+	// 		return ;
+	// 	}
+	// 	/*
+	// 	// if (ft_strchr(name, '/'))
+	// 		//
+	// 		num != first
+	// 	while  (ft_isalpha(str[i]) || str[i] == '_') && str[i])
+	// 	*/
+	// 	ft_strdel(str);
+	// }
+	// else
+	// {
+	// 	ft_strdel(str);
+	// 	*str = ft_strdup(tmp);
+	// }
 }
 
-void	strip_quotes(char ***args, int argc)
+void	convert_env_list(char ***args, int argc, char **env, t_ms_help *help)
 {
-	int	i;
 	int	a;
-	int	quote1;
-	int	quote2;
+	int	i;
 	int	len;
 
 	a = -1;
+	(void)help;
+	(void)env;
 	while (++a < argc)
 	{
-		i = -1;
 		len = (int)ft_strlen((*args)[a]);
-		// ft_printf("---(%s)len(%d)\n", (*args)[a], len);
+		i = -1;
 		while ((*args)[a][++i])
 		{
-			if ((*args)[a][i] == '\'' || (*args)[a][i] == '"')
+			if ((*args)[a][i] == '$')
 			{
-				quote1 = i;
-				quote2 = find_matching_quote(&(*args)[a][i], (*args)[a][i]);
-				quote2 += quote1;
+				// $HOMEabc
+				// *args[a] = update_arg_dollar(i, &(*args)[a], env, help)
 
-				// ft_printf("beg (%s)(%d - %d)\n", (*args)[a], quote1, quote2);
-				ft_memmove((void *)&(*args)[a][i], (void *)&(*args)[a][i + 1],
-					len - quote1);
-				// ft_printf("mid (%s)(%d)(%d)\n", (*args)[a], quote1, quote2);
+				// char *tmp = get_env("HOME", help.env, &help);
+				// ft_printf("\n- - - - - -\n%s\n- - - - - - -\n", tmp);
+				// ft_strdel(&tmp);
 
-				// if ((*args)[a][quote2 - 1] == '\0')
-				// {
-				// 	*args[a][quote2 - 2] = '\0';
-				// }
-				// else
-					ft_memmove((void *)&(*args)[a][quote2 - 1],
-						(void *)&(*args)[a][quote2], len - quote2);
-				// ft_printf("end (%s)(i=%d)\n", (*args)[a], i);
+			}
+			else if ((*args)[a][i] == '~' && i == 0)
+			{
 
-				i = quote2 - 2;
 			}
 		}
 	}
-}
-
-// void	check_dollar_tilde(char ***args, int argc)
-// {
-// 	int	a;
-// 	int	i;
-// 	int	len;
-
-// 	a = -1;
-// 	while (++a < argc)
-// 	{
-// 		len = (int)ft_strlen((*args)[a]);
-// 		i = -1;
-// 		while ((*args)[a][++i])
-// 		{
-// 			if ((*args)[a][i] == '$')
-// 			{
-// 				if
-// 			}
-// 			else if ((*args)[a][i] == '~' && i == 0)
-// 			{
-
-// 			}
-// 		}
-// 	}
-// }
-
-void	parse_input(char *str, char ***args)
-{
-	char	*trimmed;
-	int		argc;
-
-	argc = count_quotes(str);
-	if (argc == 0)
-	{
-		// error_msg
-		return ;
-	}
-	trimmed = ft_strtrim(str);
-	argc = ms_count_arguments(trimmed);
-
-	*args = get_arguments(trimmed, argc);
-	ft_strdel(&trimmed);
-	if (argc > 10)
-	{
-		ft_printf("Too many arguments\n");
-	}
-	// check_dollar_tilde(args, argc);
-
-	strip_quotes(args, argc);
-
-	// test print
-	// int a = 0;
-	// ft_printf("\t\tOriginal: (%s)(%d)\n", str, argc);
-	// while (a < argc)
-	// {
-	// 	ft_printf("(%d)(%s)\n", a, (*args)[a]);
-	// 	a++;
-	// }
-	// ft_printf("(%d)(%s)\n", a, (*args)[a]);
-	//
-
 }
 
 char	*get_input(void)
@@ -367,22 +299,25 @@ char	*get_input(void)
 }
 
 void	reset_help(t_ms_help *help)
-// void	reset_help(t_ms_help *help, char **commands)
 {
 	help->found = 0;
-	// commands = {"cd\0", "echo\0", "pwd\0", "exit\0", "setenv\0",
-	// "ls\0"  };
+	help->env_size = 0;
+
 }
 
+// int main(int argc, char **agrv, char **env)
 int	main(void)
 {
 	char		*str;
 	char		**args;
 	t_ms_help	help;
-	// char		*commands[];		// [?]
+	extern char **environ;
 
 	reset_help(&help);
-	// reset_help(&help, &commands);
+	help.env = copy_env_list(environ, &help);
+
+	// test_update_dollar(help.env, &help);
+	// test_add_env(&(help.env), &help);
 
 	while (1)
 	{
@@ -391,75 +326,35 @@ int	main(void)
 		str = get_input();
 		if (str && (str[0] != 0))
 		{
-			parse_input(str, &args);
-			execute_commands(args);
+			if (parse_input(str, &args, &help))
+				execute_commands(args, &help);
 		}
 		ft_strdel(&str);
 		ft_free_doublearray(&args);
 	}
+	ft_free_doublearray(&(help.env));
 	return (0);
 }
 
 
-// //	v1, doesnt count the ("word"word2) as 1 argument
-// int	count_arguments(char *str)
-// {
-// 	int	args;
-// 	int	i;
-// 	int	quote;
-
-// 	i = -1;
-// 	args = 0;
-// 	while (str[++i])
-// 	{
-// 		if (str[i] != '\t' && str[i] != ' ')
-// 		{
-// 			if (str[i] == '\'' || str[i] == '\"')
-// 			{
-// 				quote = str[i++];
-// 				while (str[i] != quote)
-// 					i++;
-// 			}
-// 			else
-// 			{
-// 				while (str[i] != '\t' && str[i] != ' ' && str[i] && str[i] != '\'' && str[i] != '\"')
-// 					i++;
-// 			}
-// 			args++;
-// 			if (!str[i])
-// 				break;
-// 		}
-// 		else
-// 		{
-// 			// while (str[i] == '\t' || str[i] == ' ')
-// 			while (ft_iswhitespace(str[i]))
-// 				i++;
-// 			i--;
-// 		}
-// 	}
-// 	return (args);
-// }
-
+//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
 
-// void test_args(void)
-// {
-// 	char *str;
 
-// 	while (get_next_line(0, &str) != -1)
-// 	{
-// 		if (ft_strcmp("exit", str) == 0)
-// 		{
-// 			ft_printf("BYE!\n");
-// 			exit(10);
-// 		}
-// 		ft_printf("(%s) = %d\n", str, count_arguments(str));
-// 		free(str);
-// 	}
-// }
 void test_ms_args(void)
 {
 	char *str;
@@ -494,10 +389,81 @@ void test_quotes(void)
 	}
 }
 
-// //main for quotes
-// int main(void)
-// {
-// 	// test_quotes();
-// 	// test_args();
-// 	// test_ms_args();
-// }
+void	test_add_env(char ***env, t_ms_help *help)
+{
+// void	add_env(char *var, char ***env, t_ms_help *help)
+	char *str = "testing=foo";
+
+	print_env_list(*env, help);
+	ft_printf("(%d)", help->env_size);
+	add_env(str, env, help);
+	ft_printf("\n- - - - - - - - - - - -\n(%d)\n", help->env_size);
+	print_env_list(*env, help);
+	exit(1);
+}
+
+void	test_update_dollar(char **env, t_ms_help *help)
+{
+	// char *arr[2] =  {"hello$LOGNAME", NULL};
+	// char *arr2[2] = {"hella$LOGNAMEH", NULL};
+	char **arr;
+	// char **arr2;
+
+	arr = (char **)malloc(sizeof(char *) * 5);
+	arr[4] = NULL;
+	arr[0] = ft_strdup("hello$LOGNAME");
+	arr[1] = ft_strdup("hello$LOGNAME.asd");
+	arr[2] = ft_strdup("hello$LOGNAMEasd");
+	arr[3] = ft_strdup("hello$LOGNAM");
+
+	// update_arg_dollar(2, &arr[0], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[0]);
+	update_arg_dollar(5, &arr[0], env, help);
+	ft_printf("test final\t(%s)\n\n", arr[0]);
+	// update_arg_dollar(6, &arr[0], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[0]);
+	// update_arg_dollar(7, &arr[0], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[0]);
+
+	// update_arg_dollar(2, &arr[1], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[1]);
+	// update_arg_dollar(5, &arr[1], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[1]);
+	// update_arg_dollar(6, &arr[1], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[1]);
+	// update_arg_dollar(7, &arr[1], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[1]);
+
+	// update_arg_dollar(2, &arr[2], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[2]);
+	// update_arg_dollar(5, &arr[2], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[2]);
+	// update_arg_dollar(6, &arr[2], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[2]);
+	// update_arg_dollar(7, &arr[2], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[2]);
+
+	// update_arg_dollar(2, &arr[3], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[3]);
+	// update_arg_dollar(5, &arr[3], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[3]);
+	// update_arg_dollar(6, &arr[3], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[3]);
+	// update_arg_dollar(7, &arr[3], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[3]);
+
+	exit(0);
+}
+
+void	print_env_list_orig(char **env)
+{
+	int	i;
+
+	i = 0;
+	while (env[i])
+	{
+		ft_printf("%d: %s\n",i, env[i]);
+		i++;
+	}
+	ft_printf("------\n");
+}

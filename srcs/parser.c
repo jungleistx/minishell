@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/10 13:47:58 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/10 16:45:42 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/13 14:09:49 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,27 +113,30 @@ int	ms_count_arguments(char *str)
 	// "hello "  "asddsa"  asd asd
 }
 
-void	parse_input(char *str, char ***args, t_ms_help *help)
+int	parse_input(char *str, char ***args, t_ms_help *help)
 {
 	char	*trimmed;
 	int		argc;
 
-	argc = count_quotes(str);
-	if (argc == 0)
+	// argc = count_quotes(str);
+	// if (argc == 0)
+	if (!(count_quotes(str)))
 	{
-		// error_msg
-		return ;
+		ft_printf("ERROR, unmatched quote!\n");
+		return 0;
 	}
-	trimmed = ft_strtrim(str);
+	trimmed = ft_strtrim(str);		//malloc
 	argc = ms_count_arguments(trimmed);
 	help->arguments = argc;
-	*args = get_arguments(trimmed, argc);
+	*args = get_arguments(trimmed, argc);	//malloc
 	ft_strdel(&trimmed);
 	if (argc > 10)
 	{
 		ft_printf("Too many arguments\n");
+		return (0);
 	}
 	// convert_env_list(args, argc, help->env, help);
 
 	strip_quotes(args, argc);
+	return (1);
 }

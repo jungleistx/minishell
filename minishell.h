@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/27 20:35:59 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/10 14:00:29 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/13 14:08:56 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,17 +15,13 @@
 # include "libft/printf/includes/ft_printf.h"
 
 #include <stdio.h>	//	----	----	----	DELETE	 ----	----
-// space = 32
-// tab	 = 9
-// ;   	 = 59
-// nl 	 = 10
-
 
 typedef struct s_ms_help
 {
-	int		found;
-	char	**env;
-	int		env_size;
+	int		found;		//	?
+	char	**env;		//	copy of env
+	int		env_size;	//	env_list_size
+	int		arguments;	//	# of cla
 }			t_ms_help;
 
 // parser.c
@@ -33,7 +29,7 @@ int		skip_whitespace(char *str);
 int		find_argument_len(char *str);
 char	**get_arguments(char *str, int argc);
 int		ms_count_arguments(char *str);
-void	parse_input(char *str, char ***args);
+int		parse_input(char *str, char ***args, t_ms_help *help);
 
 // parser_quotes.c
 int		count_quotes(char *str);
