@@ -160,6 +160,7 @@ char	*get_env_name(char *var)
 
 	i = 0;
 	// ft_printf("env_func\t(%s)\n", var);
+	// check pos[0] !isnum
 	while (var[i] && ((ft_isalnum(var[i])) || var[i] == '_'))
 		i++;
 	return (ft_strsub((const char *)var, 0, (size_t)i));
@@ -221,6 +222,34 @@ void	update_arg_dollar(int i, char **str, char **env, t_ms_help *help)
 	ft_strdel(&content);
 }
 
+void	update_home(char **str, char **env, t_ms_help *help)
+{
+	char	*home;
+	char	*post_tilde;
+	size_t	tot_len;
+
+	tot_len = ft_strlen(*str);
+	home = get_env("HOME", env, help);
+	// if (ft_strlen(home) == 0)
+	// 	exit(13);
+	if (tot_len > 1)
+	{
+		post_tilde = ft_strsub((const char *)*str, 1, tot_len - 1);
+		if (post_tilde[0] == '/' || ft_iswhitespace(post_tilde[0]))
+		{
+			ft_bzero((void *)*str, tot_len);
+			ft_strdel(str);
+			*str = ft_strjoin((const char *)home, (const char *)post_tilde);
+		}
+		ft_strdel(&post_tilde);
+	}
+	else
+	{
+		ft_bzero((void *)*str, 1);
+		ft_strdel(str);
+		*str = ft_strdup((const char *)home);
+	}
+	ft_strdel(&home);
 }
 
 void	convert_env_list(char ***args, int argc, char **env, t_ms_help *help)
@@ -245,7 +274,7 @@ void	convert_env_list(char ***args, int argc, char **env, t_ms_help *help)
 			}
 			else if ((*args)[a][i] == '~' && i == 0)
 			{
-
+				update_home(&(*args)[a], env, help);
 			}
 		}
 	}
@@ -315,6 +344,34 @@ int	main(void)
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+
+void	test_update_tilde(char **env, t_ms_help *help)
+{
+	char **arr;
+
+	arr = (char **)malloc(sizeof(char *) * 8);
+	if (!arr)
+	{
+		ft_printf("error in test_update_tilde, exiting\n");
+		exit(11);
+	}
+	arr[7] = NULL;
+	arr[0] = ft_strdup("~");
+	arr[1] = ft_strdup("~/asddas");
+	arr[2] = ft_strdup("~repos");
+	arr[3] = ft_strdup("asd~");
+	arr[4] = ft_strdup("asd/~");
+	arr[5] = ft_strdup("asd ~");
+	arr[6] = ft_strdup("~ asd");
+
+	help->arguments = 7;
+	print_env_list_orig(arr);
+	convert_env_list(&arr, 7, env, help);
+	// ft_printf("134124142\n");
+	print_env_list_orig(arr);
+
+	exit(0);
+}
 
 
 void test_ms_args(void)
