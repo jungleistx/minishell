@@ -101,6 +101,7 @@ void	update_env(char *name, char *var, char ***env)
 		env_len = get_longest_env_len(name, (*env)[a]);
 		if (ft_strncmp((*env)[a], name, env_len) == 0)
 		{
+			ft_bzero((void *)tmp, update_len);
 			ft_strdel(&(*env)[a]);
 			tmp = (char *)malloc(sizeof(char) + update_len);
 			if (!tmp)
