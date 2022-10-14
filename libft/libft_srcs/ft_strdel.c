@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/10 13:11:16 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/09/28 20:16:24 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/14 16:07:50 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ void	ft_strdel(char **as)
 {
 	if (as == NULL)
 		return ;
+	ft_strclr(*as);
 	free(*as);
 	*as = NULL;
 }
