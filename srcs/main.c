@@ -166,17 +166,20 @@ char	*get_env_name(char *var)
 	return (ft_strsub((const char *)var, 0, (size_t)i));
 }
 
+// get_post_dollar_content(*str, i, ft_strlen(content), post_len);
 char	*get_post_dollar_content(char *str, int i, size_t len, size_t post_len)
 {
 	char	*tmp;
 
-	tmp = ft_strsub((const char *)&str[(size_t)i + len], 0, post_len);
+	// ft_printf("POST\ti %d, len %d, post_len %d\n", i, len, post_len);
+	// ft_printf("POST\t(%s)\n", &(str[(size_t)i + len]));
+	tmp = ft_strsub((const char *)&str[(size_t)i + len + 1], 0, post_len);
 	if (!tmp)
 		exit(12);
 	return (tmp);
 }
 
-void	replace_dollar_content(char **str, char *cont, char **pre_d, int i)
+void	replace_dollar(char **str, char *cont, char **pre_d, int i, char **post)
 {
 	if (i > 0)
 	{
@@ -186,12 +189,11 @@ void	replace_dollar_content(char **str, char *cont, char **pre_d, int i)
 	}
 	else
 		*str = ft_strcpy(*str, (const char *)cont);
-}
-
-void	append_post_dollar(char **str, char **post)
-{
-	*str = ft_strcat(*str, (const char *)*post);
-	ft_strdel(post);
+	if (*post)
+	{
+		*str = ft_strcat(*str, (const char *)*post);
+		ft_strdel(post);
+	}
 }
 
 void	update_arg_dollar(int i, char **str, char **env, t_ms_help *help)
@@ -201,24 +203,23 @@ void	update_arg_dollar(int i, char **str, char **env, t_ms_help *help)
 	char	*pre_dollar;
 	size_t	post_len;
 	size_t	new_full_len;
+	size_t	env_len;
 
-	tmp = get_env_name(&(*str)[i + 1]);
+	tmp = get_full_env_name(&(*str)[i + 1]);
+	env_len = ft_strlen(tmp);
 	content = get_env(tmp, env, help);
-	post_len = ft_strlen(*str) - ft_strlen(tmp) - (size_t)i - 1;
+	post_len = ft_strlen(*str) - env_len - (size_t)i - 1;
 	ft_strdel(&tmp);
 	if (post_len > 0)
-		tmp = get_post_dollar_content(*str, i, ft_strlen(content), post_len);
+		tmp = get_post_dollar_content(*str, i, env_len, post_len);
 	if (i > 0)
 		pre_dollar = ft_strsub((const char *)(*str), 0, (size_t)i);
-	new_full_len = (size_t)i + ft_strlen(content) + post_len + 1;
-	ft_bzero((void *)*str, ft_strlen(*str));
+	new_full_len = (size_t)i + ft_strlen(content) + post_len;
 	ft_strdel(str);
-	*str = (char *)malloc(new_full_len);
+	*str = ft_strnew(new_full_len);
 	if (!*str)
 		exit(9);
-	replace_dollar_content(str, content, &pre_dollar, i);
-	if (post_len > 0)
-		append_post_dollar(str, &tmp);
+	replace_dollar(str, content, &pre_dollar, i, &tmp);
 	ft_strdel(&content);
 }
 
@@ -345,6 +346,38 @@ int	main(void)
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
 
+void	test_update_env(char **env, t_ms_help *help)
+{
+	(void)env;
+	print_env_list_orig(help->env);
+	update_env("LOGNAME", "newtest", &(help->env), help);
+	print_env_list_orig(help->env);
+	exit(0);
+}
+
+// void	set_env(char **args, t_ms_help *help)
+void	test_set_env(char **env, t_ms_help *help)
+{
+	char **arr;
+
+	arr = (char **)malloc(sizeof(char *) * 3);
+	if (!arr)
+	{
+		ft_printf("error in test_update_tilde, exiting\n");
+		exit(11);
+	}
+	arr[2] = NULL;
+	arr[0] = ft_strdup("NEWTEST=yayyy");
+	arr[1] = ft_strdup("TESTING=fun");
+
+	help->arguments = 2;
+	print_env_list_orig(env);
+	set_env(arr, help);
+	print_env_list_orig(env);
+
+	exit(0);
+}
+
 void	test_update_tilde(char **env, t_ms_help *help)
 {
 	char **arr;
@@ -415,7 +448,9 @@ void	test_add_env(char ***env, t_ms_help *help)
 
 	print_env_list(*env, help);
 	ft_printf("(%d)", help->env_size);
-	add_env(str, env, help);
+	// add_env(str, env, help);
+	// add_env("testing", "foo", env, help, 0)
+	(void)str;
 	ft_printf("\n- - - - - - - - - - - -\n(%d)\n", help->env_size);
 	print_env_list(*env, help);
 	exit(1);
@@ -423,53 +458,64 @@ void	test_add_env(char ***env, t_ms_help *help)
 
 void	test_update_dollar(char **env, t_ms_help *help)
 {
-	// char *arr[2] =  {"hello$LOGNAME", NULL};
-	// char *arr2[2] = {"hella$LOGNAMEH", NULL};
 	char **arr;
-	// char **arr2;
 
-	arr = (char **)malloc(sizeof(char *) * 5);
-	arr[4] = NULL;
+	arr = (char **)malloc(sizeof(char *) * 9);
+	if (!arr)
+	{
+		ft_printf("error in test_update_dollar, exiting\n");
+		exit(11);
+	}
+	arr[8] = NULL;
 	arr[0] = ft_strdup("hello$LOGNAME");
-	arr[1] = ft_strdup("hello$LOGNAME.asd");
-	arr[2] = ft_strdup("hello$LOGNAMEasd");
+	arr[1] = ft_strdup("hello$LANG.asd");
+	arr[2] = ft_strdup("hello$LANGasd");
 	arr[3] = ft_strdup("hello$LOGNAM");
+	arr[4] = ft_strdup("$LOGNAME.asd");
+	arr[5] = ft_strdup("$LOGNAME_asd");
+	arr[6] = ft_strdup("\"$SHELL\".random\'$USER\'");
+	arr[7] = ft_strdup("hello$LOGNAME.random\"$USER\"$LOGNAME.hello");
+	// arr[7] = ft_strdup("hello$LOGNAME.random$USER.$LOGNAM.hello");
 
-	// update_arg_dollar(2, &arr[0], env, help);
-	// ft_printf("test final\t(%s)\n\n", arr[0]);
-	update_arg_dollar(5, &arr[0], env, help);
-	ft_printf("test final\t(%s)\n\n", arr[0]);
-	// update_arg_dollar(6, &arr[0], env, help);
-	// ft_printf("test final\t(%s)\n\n", arr[0]);
-	// update_arg_dollar(7, &arr[0], env, help);
-	// ft_printf("test final\t(%s)\n\n", arr[0]);
+	help->arguments = 8;
+	print_env_list_orig(arr);
+	convert_env_list(&arr, 8, env, help);
+	print_env_list_orig(arr);
 
-	// update_arg_dollar(2, &arr[1], env, help);
-	// ft_printf("test final\t(%s)\n\n", arr[1]);
+	// ft_printf("test final\t(%s)\n", arr[0]);
+	// update_arg_dollar(5, &arr[0], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[0]);
+	// ft_printf("-	-	-	-	-	-	-	\n");
+
+	// ft_printf("test final\t(%s)\n", arr[1]);
 	// update_arg_dollar(5, &arr[1], env, help);
 	// ft_printf("test final\t(%s)\n\n", arr[1]);
-	// update_arg_dollar(6, &arr[1], env, help);
-	// ft_printf("test final\t(%s)\n\n", arr[1]);
-	// update_arg_dollar(7, &arr[1], env, help);
-	// ft_printf("test final\t(%s)\n\n", arr[1]);
+	// ft_printf("-	-	-	-	-	-	-	\n");
 
-	// update_arg_dollar(2, &arr[2], env, help);
-	// ft_printf("test final\t(%s)\n\n", arr[2]);
+	// ft_printf("test final\t(%s)\n", arr[2]);
 	// update_arg_dollar(5, &arr[2], env, help);
 	// ft_printf("test final\t(%s)\n\n", arr[2]);
-	// update_arg_dollar(6, &arr[2], env, help);
-	// ft_printf("test final\t(%s)\n\n", arr[2]);
-	// update_arg_dollar(7, &arr[2], env, help);
-	// ft_printf("test final\t(%s)\n\n", arr[2]);
+	// ft_printf("-	-	-	-	-	-	-	\n");
 
-	// update_arg_dollar(2, &arr[3], env, help);
-	// ft_printf("test final\t(%s)\n\n", arr[3]);
+	// ft_printf("test final\t(%s)\n", arr[3]);
 	// update_arg_dollar(5, &arr[3], env, help);
 	// ft_printf("test final\t(%s)\n\n", arr[3]);
-	// update_arg_dollar(6, &arr[3], env, help);
-	// ft_printf("test final\t(%s)\n\n", arr[3]);
-	// update_arg_dollar(7, &arr[3], env, help);
-	// ft_printf("test final\t(%s)\n\n", arr[3]);
+	// ft_printf("-	-	-	-	-	-	-	\n");
+
+	// ft_printf("test final\t(%s)\n", arr[4]);
+	// update_arg_dollar(0, &arr[4], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[4]);
+	// ft_printf("-	-	-	-	-	-	-	\n");
+
+	// ft_printf("test final\t(%s)\n", arr[5]);
+	// update_arg_dollar(0, &arr[5], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[5]);
+	// ft_printf("-	-	-	-	-	-	-	\n");
+
+	// ft_printf("test final\t(%s)\n", arr[6]);
+	// update_arg_dollar(0, &arr[6], env, help);
+	// ft_printf("test final\t(%s)\n\n", arr[6]);
+	// ft_printf("-	-	-	-	-	-	-	\n");
 
 	exit(0);
 }
