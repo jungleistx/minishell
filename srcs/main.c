@@ -6,103 +6,47 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/28 17:16:42 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/07 17:12:10 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/17 21:54:01 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-int	count_quotes(char *str)
-{
-	int	i;
-	int	found;
-	int	quote;
+//
+void	test_add_env(char ***env, t_ms_help *help);
+void	test_update_dollar(char **env, t_ms_help *help);
+void test_ms_args(void);
+void test_quotes(void);
+void	print_env_list_orig(char **env);
+void	test_update_tilde(char **env, t_ms_help *help);
+void	test_set_env(char **env, t_ms_help *help);
+void	test_update_env(char **env, t_ms_help *help);
+void	test_unset_env(char ***env, t_ms_help *help);
+//
 
-	found = 0;
-	i = -1;
-	while (str[++i])
+{
+
 	{
-		if (str[i] == '\'' || str[i] == '\"')
-		{
-			found = 1;
-			quote = str[i++];
-			while (str[i] != quote && str[i])
-				i++;
-			if (str[i] == quote)
-				found = 0;
-		}
-	}
-	if (found)
-		return (0);		// unmatched quote, ERROR
-	return (1);			// matched quote, OK
-}
-
-	// --	TODO
-// char	*get_home_env()
-// char	*get_oldpwd_env()
-// char	*get_pwd()
-// void	update_env(char *env, char *new)
-
-int	get_env_list_size(char **env)
-{
-	int	total;
-
-	total = 0;
-	while (env[total])
-		total++;
-	return (total);
-}
-
-
-void	copy_env_list(char **env)
-{
-	char	**env_copy;
-	int		env_size;
-
-	env_size = (get_env_list_size(env);
-	env_copy = (char **)malloc(sizeof(char *) * env_size);
-	if (!env_copy)
-		exit(4);
-
-	env_copy[env_size] = NULL;
-	while (env_size >= 0)
-	{
-		env_copy[env_size] = ft_strdup(env[env_size]);
-		env_size--;
 	}
 }
 
-void	change_dir(char **pwd, char *dest)
 {
-	// multiple input
-		// 22-10-07, 16:42 ~/hive/repos/minishell -> cd asdasd ~
-		// cd: string not in pwd: asdasd
-		// 22-10-07, 16:42 ~/hive/repos/minishell -> cd ~ asdasd
-		// cd: no such file or directory: asdasd/hive/repos/minishell
-	char	*tmp;
 
-	if (!dest)
-		tmp = get_env("HOME", help->env, help);
-	else if (ft_strcmp("-", dest) == 0)
-		tmp = get_env("OLDPWD", help->env, help);
-	else
-		tmp = ft_strdup(dest);
+}
 
-	if (chdir(tmp) == -1)
+{
+
 	{
-		ft_printf("cd: no such file or directory: %s\n", tmp);
-		ft_memdel((void **)&tmp);
-		return ;
 	}
-	else
+}
+
+{
+
 	{
-		update_env("OLDPWD", *pwd, &(help->env));
+	}
+	{
 	}
 
-	ft_memdel((void **)&tmp);
-	ft_memdel((void **)pwd);
-	*pwd = getcwd(NULL, 0);
-	update_env("PWD", *pwd, &(help->env));
 }
 
 void	execute_commands(char **args, t_ms_help *help)
@@ -138,14 +82,16 @@ void	execute_commands(char **args, t_ms_help *help)
 	}
 	else if (ft_strcmp("unsetenv", args[0]) == 0)
 	{
+		// unset_env(&(help->env), args[1], help);
+		loop_unset_env(&(help->env), args, help);
 		// print_env_list(help->env, help);
 	}
 	else if (ft_strcmp("setenv", args[0]) == 0)
 	{
 		// parse the arg[1];
-		// SHELL=randomness  '='count == 1									->
-
-		update_env("SHELL", "randomness", &(help->env));
+		// SHELL=randomness  '='count == 1
+		set_env(args, help);
+		// update_env("SHELL", "randomness", &(help->env));
 	}
 	// else
 	// {
@@ -309,12 +255,18 @@ int	main(void)
 	help.env = copy_env_list(environ, &help);
 
 	// test_update_dollar(help.env, &help);
+	// test_update_tilde(help.env, &help);
 	// test_add_env(&(help.env), &help);
+	// test_set_env(help.env, &help);
+	// test_update_env(help.env, &help);
+	// test_unset_env(&(help.env), &help);
+	execute_paths(&(help.env), "asdm", &help);
 
 	while (1)
 	{
 		args = NULL;
 		ft_printf("$> ");
+		// fancy prompt from pwd, in color?
 		str = get_input();
 		if (str && (str[0] != 0))
 		{
@@ -327,7 +279,6 @@ int	main(void)
 	ft_free_doublearray(&(help.env));
 	return (0);
 }
-
 
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
@@ -352,6 +303,18 @@ void	test_update_env(char **env, t_ms_help *help)
 	print_env_list_orig(help->env);
 	update_env("LOGNAME", "newtest", &(help->env), help);
 	print_env_list_orig(help->env);
+	exit(0);
+}
+
+void	test_unset_env(char ***env, t_ms_help *help)
+{
+	print_env_list_orig(*env);
+
+	unset_env(env, "SHELL", help);
+	print_env_list_orig(*env);
+	unset_env(env, "SHELL", help);
+	ft_printf("test\n");
+	print_env_list_orig(*env);
 	exit(0);
 }
 
