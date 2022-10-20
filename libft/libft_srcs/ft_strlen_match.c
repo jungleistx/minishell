@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/20 20:53:31 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/20 20:55:23 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/20 21:03:52 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@ size_t	ft_strlen_match(char *str, char delimiter)
 {
 	size_t	i;
 
+	if (!str)
+		return (0);
 	i = -1;
 	while (str[++i])
 	{
