@@ -6,29 +6,33 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/20 18:42:56 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/20 18:52:04 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/20 19:31:37 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-int	validate_executable(char *path, char *command)
+int	validate_executable(char *path, char **command)
 {
 	struct stat	filestat;
 	char		*new;
 	int			ret_nr;
 
-	new = ft_strjoin_three(path, "/", command);
+	new = ft_strjoin_three(path, "/", *command);
 	if (!new)
 		exit(18);
 	ret_nr = 0;
 	if (lstat(new, &filestat) == 0 && filestat.st_mode & S_IXUSR)
+	{
+		ft_strdel(command);
+		*command = ft_strdup(new);
 		ret_nr = 1;
+	}
 	ft_strdel(&new);
 	return (ret_nr);
 }
 
-int	validate_paths(char ***env, char *command, t_ms_help *help)
+int	validate_paths(char ***env, char **command, t_ms_help *help)
 {
 	char		**paths;
 	char		*name;
@@ -54,15 +58,17 @@ int	validate_paths(char ***env, char *command, t_ms_help *help)
 	return (0);
 }
 
-int	validate_bin_name(char *command, char ***env, t_ms_help *help)
+int	validate_bin_name(char **command, char ***env, t_ms_help *help)
 {
 	struct stat	filestat;
 
-	if (command[0] == '/')
+	if ((*command)[0] == '/')
 	{
-		if (lstat(command, &filestat) == 0 && filestat.st_mode & S_IXUSR)
+		if (lstat(*command, &filestat) == 0 && filestat.st_mode & S_IXUSR)
 			return (1);
 	}
+	else if (ft_strncmp("./", (const char *)*command, 2) == 0)
+		return (1);
 	else if (validate_paths(env, command, help))
 		return (1);
 	return (0);

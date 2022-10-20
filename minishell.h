@@ -45,11 +45,11 @@ int		find_matching_quote(char *str, char quote);
 void	strip_quotes(char ***args, int argc);
 
 // bin_validation.c
-int		validate_executable(char *path, char *command);
-int		validate_paths(char ***env, char *command, t_ms_help *help);
-int		validate_bin_name(char *command, char ***env, t_ms_help *help);
+int		validate_executable(char *path, char **command);
+int		validate_paths(char ***env, char **command, t_ms_help *help);
+int		validate_bin_name(char **command, char ***env, t_ms_help *help);
 
-void	execute_bins(char **args, t_ms_help *help, char ***env);
+void	execute_bins(char ***args, t_ms_help *help, char ***env);
 void	convert_env_list(char ***args, int argc, char **env, t_ms_help *help);
 size_t	get_longest_env_len(char *name, char *env);
 void	print_env_list_orig(char **env);
