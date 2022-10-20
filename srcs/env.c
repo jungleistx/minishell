@@ -197,3 +197,36 @@ void	loop_unset_env(char ***env, char **args, t_ms_help *help)
 	while (++i < help->arguments)
 		unset_env(env, args[i], help);
 }
+
+int	get_env_name_len(char *str)
+{
+	int	i;
+
+	i = -1;
+	while (str[++i])
+	{
+		if (str[i] == '=')
+			return (i);
+	}
+	return (0);
+}
+
+void	set_env(char **args, t_ms_help *help)
+{
+	int		i;
+	char	*name;
+	char	*content;
+	int		env_len;
+
+	i = 0;
+	while (++i < help->arguments)
+	{
+		env_len = get_env_name_len(args[i]);
+		name = ft_strsub((const char *)args[i], 0, env_len);
+		content = ft_strchr((const char *)args[i], 61);
+		content++;
+		if (ft_strcount(args[i], '=') > 0)
+			update_env(name, content, &(help->env), help);
+		ft_strdel(&name);
+	}
+}
