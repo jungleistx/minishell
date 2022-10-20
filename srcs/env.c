@@ -49,19 +49,21 @@ void	print_env_list(char **env, t_ms_help *help)
 	int	i;
 
 	i = 0;
-	while (i < help->env_size)
+	while (i < help->env_size && env[i])
 		ft_printf("%s\n", env[i++]);
 }
 
 size_t	get_longest_env_len(char *name, char *env)
 {
 	size_t	len;
+	size_t	name_len;
 
 	len = 0;
 	while (env[len] != '=' && env[len])
 		len++;
-	if (ft_strlen((const char *)name) > len)
-		len = ft_strlen((const char *)name);
+	name_len = ft_strlen((const char *)name);
+	if (name_len > len)
+		len = name_len;
 	return (len);
 }
 
