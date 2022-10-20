@@ -187,3 +187,11 @@ void	unset_env(char ***env, char *name, t_ms_help *help)
 	*env = new;
 }
 
+void	loop_unset_env(char ***env, char **args, t_ms_help *help)
+{
+	int	i;
+
+	i = 0;
+	while (++i < help->arguments)
+		unset_env(env, args[i], help);
+}
