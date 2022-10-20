@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:56:07 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/20 16:52:13 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/20 20:57:11 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ typedef struct s_list
 	struct s_list	*next;
 }t_list;
 
+size_t	ft_strlen_match(char *str, char delimiter);
 char	*ft_strjoin_three(char *s1, char *s2, char *s3);
 int		ft_strcount(char *str, char target);
 void	ft_free_doublearray(char ***array);
