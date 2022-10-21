@@ -187,6 +187,7 @@ void	unset_env(char ***env, char *name, t_ms_help *help)
 	help->env_size--;
 	ft_free_doublearray(env);
 	*env = new;
+	ft_strdel(&tmp);
 }
 
 void	loop_unset_env(char ***env, char **args, t_ms_help *help)
@@ -225,7 +226,8 @@ void	set_env(char **args, t_ms_help *help)
 		name = ft_strsub((const char *)args[i], 0, env_len);
 		content = ft_strchr((const char *)args[i], 61);
 		content++;
-		if (ft_strcount(args[i], '=') > 0)
+		if (ft_strcount(args[i], '=') > 0 && (ft_isalpha((*args)[0])
+			|| (*args)[0] == '_'))
 			update_env(name, content, &(help->env), help);
 		ft_strdel(&name);
 	}
