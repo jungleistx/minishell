@@ -13,7 +13,7 @@ LIBFT_FILES=ft_atoi.c ft_bzero.c ft_isalnum.c ft_isalpha.c ft_isascii.c \
 	  	ft_lstadd.c ft_lstdelone.c ft_lstdel.c ft_lstiter.c ft_lstmap.c \
 	  	ft_lstadd_end.c get_next_line.c ft_free_doublearray.c \
 		ft_iswhitespace.c ft_strcount.c ft_strjoin_three.c \
-		ft_strlen_match.c
+		ft_strlen_match.c ft_strarray_size.c
 PRINTF_FILES=address.c assign.c bonus.c char.c flags.c flags2.c float.c \
 		ft_printf.c helpers.c hex_flags.c hex.c int_flags.c int.c \
 		octal_flags.c octal.c percent.c string.c unsigned.c
