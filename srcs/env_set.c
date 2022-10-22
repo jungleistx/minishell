@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/21 23:22:09 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/22 20:21:43 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/22 20:26:04 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,7 @@ void	add_env(char **var, char ***env, t_ms_help *h)
 	new_env[arr_size--] = NULL;
 	new_env[arr_size] = ft_strdup(*var);
 	while (--arr_size >= 0)
-	{
 		new_env[arr_size] = ft_strdup((*env)[arr_size]);
-	}
 	ft_free_doublearray(env);
 	ft_strdel(var);
 	*env = new_env;
