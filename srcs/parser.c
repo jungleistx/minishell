@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/10 13:47:58 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/21 23:18:18 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/22 22:11:37 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,15 +22,13 @@ int	find_matching_quote(char *str, char quote)
 	return (i);
 }
 
-void	strip_quotes(char ***args, int argc)
+void	strip_quotes(char ***args, int argc, int a)
 {
 	int	i;
-	int	a;
 	int	quote1;
 	int	quote2;
 	int	len;
 
-	a = -1;
 	while (++a < argc)
 	{
 		i = -1;
@@ -101,6 +99,6 @@ int	parse_input(char *str, char ***args, t_ms_help *help)
 	*args = get_arguments(trimmed, argc);
 	ft_strdel(&trimmed);
 	convert_env_list(args, argc, help->env, help);
-	strip_quotes(args, argc);
+	strip_quotes(args, argc, -1);
 	return (1);
 }
