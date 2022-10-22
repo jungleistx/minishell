@@ -6,111 +6,77 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/10 13:47:58 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/13 14:09:49 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/21 23:18:18 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-
-int	skip_whitespace(char *str)
+int	find_matching_quote(char *str, char quote)
 {
 	int	i;
 
-	i = -1;
-	while (str[++i])
-	{
-		if (str[i] == ' ' || str[i] == '\t' || str[i] == '\r'
-			|| str[i] == '\n' || str[i] == '\f' || str[i] == '\v')
-		{
-			i++;
-			while ((str[i] == ' ' || str[i] == '\t' || str[i] == '\r'
-			|| str[i] == '\n' || str[i] == '\f' || str[i] == '\v') && str[i])
-				i++;
-			if (str[i])
-				return (i - 1);
-		}
-	}
-	return (0);
-}
-
-int	find_argument_len(char *str)
-{
-	int	i;
-
-	i = 0;
-	while (str[i] && !(ft_iswhitespace(str[i])))
-	{
-		if (str[i] == '\'' || str[i] == '\"')
-			i += find_matching_quote(&str[i], str[i]);
+	i = 1;
+	while (str[i] && str[i] != quote)
 		i++;
-	}
 	return (i);
 }
 
-char	**get_arguments(char *str, int argc)
+void	strip_quotes(char ***args, int argc)
 {
-	int		i;
-	int		j;
-	int		arg;
-	char	**array;
+	int	i;
+	int	a;
+	int	quote1;
+	int	quote2;
+	int	len;
 
-	array = (char **) malloc(sizeof(char *) * (argc + 1));
-	if (!array)
-		exit(3);
-	i = -1;
-	arg = 0;
-	while (str[++i])
+	a = -1;
+	while (++a < argc)
 	{
-		// ft_printf("(%d)->", i);
-		if (!ft_iswhitespace(str[i]))
+		i = -1;
+		len = (int)ft_strlen((*args)[a]);
+		while ((*args)[a][++i])
 		{
-			j = i;
-			i = find_argument_len(&str[i]);
-			array[arg++] = ft_strsub(str, (unsigned int)j, (size_t)i);
-			i += j - 1;
+			if ((*args)[a][i] == '\'' || (*args)[a][i] == '"')
+			{
+				quote1 = i;
+				quote2 = find_matching_quote(&(*args)[a][i], (*args)[a][i]);
+				quote2 += quote1;
+				ft_memmove((void *)&(*args)[a][i], (void *)&(*args)[a][i + 1],
+					len - quote1);
+				ft_memmove((void *)&(*args)[a][quote2 - 1],
+					(void *)&(*args)[a][quote2], len - quote2);
+				i = quote2 - 2;
+			}
 		}
-		// ft_printf("(%d)\n", i);
 	}
-	array[argc] = NULL;
-	return (array);
 }
 
-int	ms_count_arguments(char *str)
+int	count_quotes(char *str)
 {
-	int		ret;
-	int		i;
+	int	i;
+	int	found;
+	int	quote;
 
-	ret = 0;
+	found = 0;
 	i = -1;
 	while (str[++i])
 	{
-		// ft_printf("s(%d)", i);
-		if (!ft_iswhitespace(str[i]))
+		if (str[i] == '\'' || str[i] == '\"')
 		{
-			// ft_printf("	is(%d) ", i);
-			while (!ft_iswhitespace(str[i]) && str[i])
-			{
-				if (str[i] == '\'' || str[i] == '\"')
-					i += find_matching_quote(&str[i], str[i]);
+			found = 1;
+			quote = str[i++];
+			while (str[i] != quote && str[i])
 				i++;
-			}
-			ret++;
-			// ft_printf("	ie(%d) ", i);
-			if (str[i] == '\0')
+			if (str[i] == quote)
+				found = 0;
+			if (!str[i])
 				break ;
 		}
-		else
-		{
-			// ft_printf("	es(%d) ", i);
-			i += skip_whitespace(&str[i]);
-			// ft_printf("	ee(%d) ", i);
-		}
-		// ft_printf("e(%d)\n", i);
 	}
-	return (ret);
-	// 	      7  10     17		  27='\0'
-	// "hello "  "asddsa"  asd asd
+	if (found)
+		return (0);
+	return (1);
 }
 
 int	parse_input(char *str, char ***args, t_ms_help *help)
@@ -118,25 +84,23 @@ int	parse_input(char *str, char ***args, t_ms_help *help)
 	char	*trimmed;
 	int		argc;
 
-	// argc = count_quotes(str);
-	// if (argc == 0)
 	if (!(count_quotes(str)))
 	{
-		ft_printf("ERROR, unmatched quote!\n");
-		return 0;
-	}
-	trimmed = ft_strtrim(str);		//malloc
-	argc = ms_count_arguments(trimmed);
-	help->arguments = argc;
-	*args = get_arguments(trimmed, argc);	//malloc
-	ft_strdel(&trimmed);
-	if (argc > 10)
-	{
-		ft_printf("Too many arguments\n");
+		ft_printf("ERROR, unmatched quotes not supported!\n");
 		return (0);
 	}
-	// convert_env_list(args, argc, help->env, help);
-
+	trimmed = ft_strtrim(str);
+	argc = minishell_arguments(trimmed);
+	if (argc > 1024)
+	{
+		ft_printf("Too many arguments!\n");
+		ft_strdel(&trimmed);
+		return (0);
+	}
+	help->arguments = argc;
+	*args = get_arguments(trimmed, argc);
+	ft_strdel(&trimmed);
+	convert_env_list(args, argc, help->env, help);
 	strip_quotes(args, argc);
 	return (1);
 }
