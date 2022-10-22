@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/21 23:39:48 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/21 23:41:08 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/22 22:33:21 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,10 @@ int	validate_paths(char ***env, char **command, t_ms_help *help)
 
 	name = get_env("PATH", *env, help);
 	if (ft_strlen(name) == 0)
+	{
+		ft_strdel(&name);
 		return (0);
+	}
 	paths = ft_strsplit((const char *)name, ':');
 	ft_strdel(&name);
 	if (!paths)
