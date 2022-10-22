@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/21 23:03:18 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/21 23:11:45 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/22 21:26:58 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,11 @@ char	*get_post_dollar_content(char *str, int i, size_t len, size_t post_len)
 	return (tmp);
 }
 
-void	replace_dollar(char **str, char *cont, char **pre, int i, char **post)
+void	replace_dollar(char **str, char *cont, char **pre, char **post)
 {
-	if (i > 0)
+	if (*pre)
 	{
-		*str = ft_strncpy(*str, (const char *)*pre, (size_t)i);
+		*str = ft_strcpy(*str, (const char *)*pre);
 		*str = ft_strcat(*str, (const char *)cont);
 		ft_strdel(pre);
 	}
@@ -45,26 +45,23 @@ void	update_arg_dollar(int i, char **str, char **env, t_ms_help *help)
 	char	*content;
 	char	*pre_dollar;
 	size_t	post_len;
-	size_t	new_full_len;
-	// size_t	env_len;
+	size_t	env_len;
 
+	pre_dollar = NULL;
 	tmp = get_full_env_name(&(*str)[i + 1]);
-	// env_len = ft_strlen(tmp);
+	env_len = ft_strlen(tmp);
 	content = get_env(tmp, env, help);
-	// post_len = ft_strlen(*str) - env_len - (size_t)i - 1;
-	post_len = ft_strlen(*str) - ft_strlen(tmp) - (size_t)i - 1;
+	post_len = ft_strlen(*str) - env_len - (size_t)i - 1;
 	ft_strdel(&tmp);
 	if (post_len > 0)
-		tmp = get_post_dollar_content(*str, i, ft_strlen(tmp), post_len);
-		// tmp = get_post_dollar_content(*str, i, env_len, post_len);
+		tmp = get_post_dollar_content(*str, i, env_len, post_len);
 	if (i > 0)
 		pre_dollar = ft_strsub((const char *)(*str), 0, (size_t)i);
-	new_full_len = (size_t)i + ft_strlen(content) + post_len;
 	ft_strdel(str);
-	*str = ft_strnew(new_full_len);
+	*str = ft_strnew((size_t)i + ft_strlen(content) + post_len);
 	if (!*str)
 		exit(9);
-	replace_dollar(str, content, &pre_dollar, i, &tmp);
+	replace_dollar(str, content, &pre_dollar, &tmp);
 	ft_strdel(&content);
 }
 
