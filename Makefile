@@ -18,7 +18,7 @@ $(NAME): $(MS_OBJ) $(LIBNAME)
 	$(CC) -c $(<) -o $(@)
 
 $(LIBNAME):
-	$(MAKE) -C libft/
+	@$(MAKE) -C libft/
 
 clean:
 	@$(MAKE) -C libft/ clean
