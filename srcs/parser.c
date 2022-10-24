@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/10 13:47:58 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/22 22:11:37 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/24 14:14:21 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,8 @@ int	parse_input(char *str, char ***args, t_ms_help *help)
 		return (0);
 	}
 	trimmed = ft_strtrim(str);
+	if (!trimmed)
+		exit (21);
 	argc = minishell_arguments(trimmed);
 	if (argc > 1024)
 	{
