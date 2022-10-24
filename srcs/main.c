@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/28 17:16:42 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/24 14:18:25 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/24 14:34:04 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,6 @@ int	validate_whitespace(char *str)
 
 void	reset_help(t_ms_help *help)
 {
-	help->found = 0;
 	help->env_size = 0;
 	help->arguments = 0;
 }
