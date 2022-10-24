@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/21 23:37:01 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/21 23:38:31 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/24 13:15:10 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,22 @@ char	*builtin_cd_get_dest(char *dest, t_ms_help *help)
 	return (tmp);
 }
 
+void	builtin_cd_error_msg(char **str)
+{
+	struct stat	filestat;
+
+	if (!access(*str, F_OK))
+	{
+		if (!(lstat(*str, &filestat)) && !(S_ISDIR(filestat.st_mode)))
+			ft_printf("minishell: cd: not a directory: %s\n", *str);
+		else
+			ft_printf("minishell: cd: permission denied: %s\n", *str);
+	}
+	else
+		ft_printf("minishell: cd: no such file or directory: %s\n", *str);
+	ft_strdel(str);
+}
+
 void	builtin_cd(char **pwd, char *dest, t_ms_help *help)
 {
 	char	*tmp;
@@ -47,8 +63,7 @@ void	builtin_cd(char **pwd, char *dest, t_ms_help *help)
 	}
 	if (chdir(tmp) == -1)
 	{
-		ft_printf("cd: no such file or directory: %s\n", tmp);
-		ft_strdel(&tmp);
+		builtin_cd_error_msg(&tmp);
 		return ;
 	}
 	else
