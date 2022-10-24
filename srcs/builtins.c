@@ -6,7 +6,7 @@
 /*   By: rvuorenl <rvuorenl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/21 23:37:01 by rvuorenl          #+#    #+#             */
-/*   Updated: 2022/10/24 13:15:10 by rvuorenl         ###   ########.fr       */
+/*   Updated: 2022/10/24 14:39:34 by rvuorenl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ void	execute_commands(char ***args, t_ms_help *help)
 	if (ft_strcmp("exit", (*args)[0]) == 0)
 	{
 		ft_printf("BYE!\n");
-		exit(10);
+		exit(0);
 	}
 	else if (ft_strcmp("echo", (*args)[0]) == 0)
 		builtin_echo(*args);
